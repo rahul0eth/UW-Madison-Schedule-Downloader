@@ -1,5 +1,7 @@
 # UW-Madison Schedule Downloader — Improved
 
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support-FFDD00?style=flat-square&logo=buymeacoffee&logoColor=black)](https://buymeacoffee.com/rahul121)
+
 A Chrome extension that exports your UW–Madison class schedule to a `.ics` file you can import
 into Google Calendar, Apple Calendar, Outlook, and others.
 
@@ -75,6 +77,11 @@ estimated from finals week.
 
 - Spring recess isn't excluded yet (only Labor Day, Thanksgiving, and MLK are computed).
 - Online/asynchronous classes have no meeting time, so only their final exam is exported.
+
+## Support
+
+This is free and always will be. If it saved you some calendar wrangling, you can
+[buy me a coffee](https://buymeacoffee.com/rahul121) — entirely optional.
 
 ## Credit
 
