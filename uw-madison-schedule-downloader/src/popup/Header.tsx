@@ -16,7 +16,7 @@ const Header = () => {
 
         <ActionIcon
           component="a"
-          href="https://github.com/MaxMaeder/UW-Madison-Schedule-Downloader"
+          href="https://github.com/rahul0eth/UW-Madison-Schedule-Downloader"
           target="_blank">
           <IconBrandGithub />
         </ActionIcon>

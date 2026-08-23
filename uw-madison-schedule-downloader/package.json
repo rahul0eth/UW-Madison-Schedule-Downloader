@@ -1,8 +1,8 @@
 {
   "name": "uw-madison-schedule-downloader",
-  "displayName": "UW Madison Schedule Downloader",
+  "displayName": "UW Madison Schedule to Calendar",
   "version": "3.0.0",
-  "description": "Downloads a student's class schedule from the UW Madison Schedule Site",
+  "description": "Export your UW-Madison class schedule to Apple, Google, or Outlook Calendar, with real term dates, final exams, and course colors.",
   "author": "Max Maeder <max@mmaeder.com>",
   "scripts": {
     "dev": "plasmo dev",
