@@ -1,73 +1,46 @@
 import fileDownload from "js-file-download";
 import type { PlasmoCSConfig } from "plasmo";
-import { generateIcsCalendar, type VCalendar, type VEvent } from "ts-ics";
-import { uid } from "uid";
 import browser from "webextension-polyfill";
 
-import { DOWNLOAD_SHED_MSG } from "~assets/constants";
+import { DOWNLOAD_SHED_MSG, GET_INFO_MSG } from "~assets/constants";
 import type { AppMessage } from "~types";
-import getCleanedContent from "~util/getCleanedContent";
-import parseMeetingDetails from "~util/parseMeetingDetails";
+import { buildIcs, extractData, TERMS } from "~util/buildIcs";
 
 export const config: PlasmoCSConfig = {
   matches: ["*://mumaaenroll.services.wisc.edu/courses-schedule*"]
 };
 
 browser.runtime.onMessage.addListener((message: AppMessage) => {
-  if (message.type !== DOWNLOAD_SHED_MSG) return true;
-
-  const calEvents: VEvent[] = [];
-
-  const courses = document.querySelectorAll("#course-meetings");
-  for (let i = 0; i < courses.length; i++) {
-    const courseName = courses[i].querySelector("h3, strong");
-    if (!courseName) continue;
-
-    const [meetingList, examList] = courses[i].querySelectorAll("ul");
-
-    const meetings = meetingList.querySelectorAll("li");
-    for (let j = 0; j < meetings.length; j++) {
-      const type = meetings[j].querySelector("strong");
-      const details = meetings[j].querySelector("span");
-
-      if (!type || !details) continue;
-
-      const detailsText = getCleanedContent(details);
-      if (detailsText.toLowerCase().includes("online")) {
-        console.log("Online course, skipping meeting");
-        continue;
-      }
-
-      try {
-        const parsedDetails = parseMeetingDetails(detailsText);
-
-        for (let meetingTime of parsedDetails.times) {
-          calEvents.push({
-            uid: uid(),
-            stamp: { date: new Date() },
-            summary: `${type.textContent} | ${courseName.textContent}`,
-            location: parsedDetails.location,
-            start: { date: meetingTime.start.toJSDate() },
-            end: { date: meetingTime.end.toJSDate() },
-            recurrenceRule: {
-              frequency: "WEEKLY",
-              interval: 1
-            }
-          });
-        }
-      } catch (error) {
-        console.error("Error parsing meeting details", error);
-      }
-    }
+  // Popup asks for term name + default start date to prefill the date field.
+  if (message.type === GET_INFO_MSG) {
+    const data = extractData(document.documentElement.outerHTML);
+    if (!data) return Promise.resolve({ found: false });
+    const termName = (data.terms?.available || []).reduce(
+      (acc: string, t: any) => (t.code === data.termCode ? t.name : acc),
+      data.termCode
+    );
+    return Promise.resolve({
+      found: true,
+      termName,
+      defaultStart: TERMS[data.termCode]?.firstClass || ""
+    });
   }
 
-  const calendar: VCalendar = {
-    version: "2.0",
-    prodId: "uw-madison-schedule-downloader",
-    events: calEvents
-  };
+  if (message.type !== DOWNLOAD_SHED_MSG) return;
 
-  const generatedCal = generateIcsCalendar(calendar);
+  const data = extractData(document.documentElement.outerHTML);
+  if (!data) {
+    alert("Couldn't read your schedule on this page. Select a term with courses, then try again.");
+    return;
+  }
 
-  fileDownload(generatedCal, "uw-schedule.ics");
+  const { ics, warnings, termName } = buildIcs(data, {
+    firstClass: message.payload?.firstClass
+  });
+  if (warnings.length) {
+    console.warn(warnings.join("\n"));
+    alert(warnings.join("\n\n"));
+  }
+
+  fileDownload(ics, `uw-${termName.replace(/\s+/g, "-").toLowerCase()}.ics`);
 });

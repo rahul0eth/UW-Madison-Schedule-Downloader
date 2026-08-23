@@ -1,7 +1,7 @@
 {
   "name": "uw-madison-schedule-downloader",
   "displayName": "UW Madison Schedule Downloader",
-  "version": "2.0.3",
+  "version": "3.0.0",
   "description": "Downloads a student's class schedule from the UW Madison Schedule Site",
   "author": "Max Maeder <max@mmaeder.com>",
   "scripts": {
@@ -15,19 +15,15 @@
     "@plasmohq/messaging": "^0.6.2",
     "@tabler/icons-react": "^3.14.0",
     "js-file-download": "^0.4.12",
-    "luxon": "^3.5.0",
     "plasmo": "0.89.1",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "ts-ics": "^1.4.2",
-    "uid": "^2.0.2",
     "webextension-polyfill": "^0.12.0"
   },
   "devDependencies": {
     "@ianvs/prettier-plugin-sort-imports": "4.1.1",
     "@types/chrome": "0.0.258",
     "@types/firefox-webext-browser": "^120.0.4",
-    "@types/luxon": "^3.4.2",
     "@types/node": "20.11.5",
     "@types/react": "18.2.48",
     "@types/react-dom": "18.2.18",

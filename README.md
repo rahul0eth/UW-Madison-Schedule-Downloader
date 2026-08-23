@@ -1,14 +1,83 @@
-# UW-Madison Schedule Downloader
+# UW-Madison Schedule Downloader — Improved
 
-This is a Google Chrome extension that lets you download your class schedule as an `.ical` file,
-which can be imported to calendars such as Google Calendar or the Apple iCloud Calendar.'
+A Chrome extension that exports your UW–Madison class schedule to a `.ics` file you can import
+into Google Calendar, Apple Calendar, Outlook, and others.
 
-## Installation
+This is an improved fork of [**UW-Madison-Schedule-Downloader** by Max Maeder](https://github.com/MaxMaeder/UW-Madison-Schedule-Downloader)
+([original Chrome Web Store listing](https://chrome.google.com/webstore/detail/uw-madison-schedule-downl/jhidpigegcjbdjbdapojjnckgodpdlfh)).
+All credit for the original extension goes to Max — this fork fixes the calendar output.
 
-Download directly from the [Chrome Web Store](https://chrome.google.com/webstore/detail/uw-madison-schedule-downl/jhidpigegcjbdjbdapojjnckgodpdlfh)!
+## What's better
+
+The original exported events that repeated **forever**, landed on the **current** week regardless
+of term, and omitted final exams. This fork rewrites the ICS generation:
+
+| Fix | Detail |
+|---|---|
+| **Semester-bounded** | Events stop on the term's last class day (`RRULE …;UNTIL=`) instead of repeating forever. |
+| **Correct term dates** | Classes start on the real first day of instruction, not the week you happened to click download. |
+| **Final exams included** | Each course's final is exported as a real dated event, pulled from the schedule page. |
+| **Color coded** | Every course keeps the color UW assigns it on the schedule site. |
+| **Holidays excluded** | Labor Day and Thanksgiving recess are skipped via `EXDATE` (computed, not hardcoded). |
+| **Correct timezone** | Proper `America/Chicago` `VTIMEZONE`, so CST/CDT transitions don't shift your classes. |
+| **Editable start date** | Set the first day of classes in the popup if your term isn't built in. |
+| **Rooms & sections** | Building/room as `LOCATION`, course title and section in the description. |
+
+### How it works
+
+The original scraped the rendered DOM. This version reads the JSON the schedule page already
+embeds to bootstrap its own calendar, which carries course colors, meeting days/times, sections,
+and real final-exam dates — more accurate and far less fragile.
+
+Semester boundaries aren't in that JSON, so they come from the
+[UW–Madison academic calendar](https://secfac.wisc.edu/academic-calendar/) (`TERMS` in
+`src/util/buildIcs.ts`) and can be overridden in the popup.
+
+## Install (unpacked)
+
+1. Download/clone this repo and build it (below), or grab the zip from
+   [Releases](https://github.com/rahul0eth/UW-Madison-Schedule-Downloader/releases).
+2. Go to `chrome://extensions` and enable **Developer mode**.
+3. Click **Load unpacked** and select `build/chrome-mv3-prod`.
 
 ## Usage
 
-![Screenshot of Download Feature](https://github.com/MaxMaeder/UW-Madison-Schedule-Downloader/blob/master/webstore/card.png)
+1. Open your [Course Schedule](https://mumaaenroll.services.wisc.edu/courses-schedule/) and pick a term.
+2. Click the extension icon.
+3. Confirm the **first day of classes**, then hit **Download Schedule**.
+4. Import the `.ics` into your calendar.
 
-Simply press download!
+> **Note:** Google Calendar ignores per-event colors on ICS import and colors the whole imported
+> calendar as one. Apple Calendar and Thunderbird honor the per-course colors.
+
+## Development
+
+```bash
+pnpm install
+pnpm dev     # load build/chrome-mv3-dev as an unpacked extension
+pnpm build   # production build -> build/chrome-mv3-prod
+pnpm package # zip for the Chrome Web Store
+```
+
+### Adding a future term
+
+Add its dates from the [academic calendar](https://secfac.wisc.edu/academic-calendar/) to `TERMS`
+in `src/util/buildIcs.ts`:
+
+```ts
+"1274": { firstClass: "2027-01-19", lastClass: "2027-04-30" } // Spring 2027
+```
+
+Terms that aren't listed still work — enter the start date in the popup, and the end date is
+estimated from finals week.
+
+### Known gaps
+
+- Spring recess isn't excluded yet (only Labor Day, Thanksgiving, and MLK are computed).
+- Online/asynchronous classes have no meeting time, so only their final exam is exported.
+
+## Credit
+
+Original extension by **[Max Maeder](https://mmaeder.com)** —
+[MaxMaeder/UW-Madison-Schedule-Downloader](https://github.com/MaxMaeder/UW-Madison-Schedule-Downloader).
+Calendar-output improvements by **[Rahul Bajaj](https://github.com/rahul0eth)**.
